@@ -11,14 +11,18 @@ def detect_objects(image_files, model):
     """Detect objects in images."""
     labels = set()
     for image_file in image_files[:5]:
-        image_name = rek.hash_and_scale_image(mode="file", image_file=image_file)
-        if not rek.find_image(image_name):
-            image_url = rek.upload_image(image_name)
+        hashed_image, hashed_image_name = rek.hash_and_scale_image(
+            mode="file", image_file=image_file
+        )
+        if not rek.find_image(hashed_image_name):
+            image_url = rek.upload_image(
+                mode="file", image_name=hashed_image_name, image_file=hashed_image
+            )
         else:
-            image_url = f"https://{rek.BUCKET}.s3.amazonaws.com/{image_name}"
-        if model == "Amazon Rekognition":
-            objects = rek.detect_labels(image_name)
-        elif model == "GPT-4 Vision":
+            image_url = f"https://{rek.BUCKET}.s3.amazonaws.com/{hashed_image_name}"
+        if model == "Amazon Rekognition (Faster)":
+            objects = rek.detect_labels(hashed_image_name)
+        elif model == "GPT-4 Vision (Slower)":
             objects = gpt.detect_labels(image_url)
         labels.update(objects)
     return labels

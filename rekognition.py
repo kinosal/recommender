@@ -1,5 +1,6 @@
 """Functions for image recognition with AWS Rekognize."""
 
+import io
 from hashlib import sha256
 from PIL import Image
 import boto3
@@ -8,23 +9,27 @@ BUCKET = "recommender-images"
 
 
 def hash_and_scale_image(
-        mode: str, image_name: str = None, image_file=None
-    ) -> str:
-    """Hash image with sha256."""
-    if mode == "name":
-        with open(f"images/{image_name}", "rb") as image:
-            image_content = image.read()
+     mode: str, image_name: str = None, image_file=None
+):
+    """Hash and scale image."""
+    if mode == "path":
+        with open(f"images/{image_name}", "rb") as f:
+            image_content = f.read()
     elif mode == "file":
-        image_name = image_file.name
         image_content = image_file.read()
+        image_name = image_file.name
 
+    image = Image.open(io.BytesIO(image_content))
+    image.thumbnail((1024, 1024))
     suffix = image_name.split(".")[-1]
     hashed_name = sha256(image_content).hexdigest() + "." + suffix
-    image = Image.open(image_file)
-    image.thumbnail((1024, 1024))
-    image.save(f"images/{hashed_name}")
 
-    return hashed_name
+    if mode == "path":
+        image.save(f"images/{hashed_name}")
+
+    image_stream = io.BytesIO()
+    image.save(image_stream, format="JPEG")
+    return image_stream.getvalue(), hashed_name
 
 
 def find_image(image_name: str) -> bool:
@@ -37,10 +42,15 @@ def find_image(image_name: str) -> bool:
     return False
 
 
-def upload_image(image_name: str) -> str:
+def upload_image(mode: str, image_name: str = None, image_file=None) -> str:
     """Upload image from images folder to S3."""
     uploader = boto3.client(service_name="s3")
-    uploader.upload_file(Filename=f"images/{image_name}", Bucket=BUCKET, Key=image_name)
+    if mode == "path":
+        uploader.upload_file(
+            Filename=f"images/{image_name}", Bucket=BUCKET, Key=image_name
+        )
+    elif mode == "file":
+        uploader.put_object(Body=image_file, Bucket=BUCKET, Key=image_name)
     return f"https://{BUCKET}.s3.amazonaws.com/{image_name}"
 
 
