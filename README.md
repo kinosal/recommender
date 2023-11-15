@@ -1,6 +1,6 @@
 # GPT Recommendations from Images
 
-Live version of this app at tbd
+Live version of this app at https://recommendation.streamlit.app
 
 ## Description
 

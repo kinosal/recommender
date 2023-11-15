@@ -6,7 +6,7 @@ authors = ["Nikolas Schriefer <info@nikolasschriefer.de>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.9.16"
+python = "^3.11"
 boto3 = "^1.29.0"
 openai = "^1.2.4"
 pillow = "^10.1.0"

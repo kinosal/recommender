@@ -7,7 +7,7 @@ import gpt
 
 
 # Define functions
-def detect_objects(image_files):
+def detect_objects(image_files, model):
     """Detect objects in images."""
     labels = set()
     for image_file in image_files[:5]:
@@ -24,7 +24,7 @@ def detect_objects(image_files):
     return labels
 
 
-def generate_recommendations(topic, image_files):
+def generate_recommendations(topic, image_files, model):
     """Generate recommendations."""
     st.session_state.error = ""
 
@@ -40,11 +40,15 @@ def generate_recommendations(topic, image_files):
         st.session_state.error = "Please upload a maximum of five images"
         return
 
-    if image_files and topic and st.session_state.image_files != image_files:
+    if image_files and topic and (
+        st.session_state.image_files != image_files
+        or st.session_state.model != model
+    ):
         st.session_state.image_files = image_files
+        st.session_state.model = model
         with spinner_placeholder:
             with st.spinner("Analyzing your photos..."):
-                st.session_state.labels = detect_objects(image_files)
+                st.session_state.labels = detect_objects(image_files, model)
 
     if st.session_state.labels and topic:
         with spinner_placeholder:
@@ -56,8 +60,12 @@ def generate_recommendations(topic, image_files):
 
 # Configure Streamlit page and state
 st.set_page_config(page_title="Recommender", page_icon="🤖")
+if "topic" not in st.session_state:
+    st.session_state.topic = ""
 if "image_files" not in st.session_state:
     st.session_state.image_files = []
+if "model" not in st.session_state:
+    st.session_state.model = ""
 if "labels" not in st.session_state:
     st.session_state.labels = []
 if "recommendations" not in st.session_state:
@@ -76,7 +84,7 @@ topic = st.text_input(
 )
 
 model = st.selectbox(
-    label="Vision Model", options=["Amazon Rekognition", "GPT-4 Vision"]
+    label="Vision Model", options=["Amazon Rekognition (Faster)", "GPT-4 Vision (Slower)"]
 )
 
 image_files = st.file_uploader(
@@ -89,7 +97,7 @@ st.button(
     label="Generate recommendations",
     type="primary",
     on_click=generate_recommendations,
-    args=(topic, image_files),
+    args=(topic, image_files, model),
 )
 
 spinner_placeholder = st.empty()
