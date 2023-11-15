@@ -7,15 +7,23 @@ import boto3
 BUCKET = "recommender-images"
 
 
-def hash_and_scale_image(image_name: str) -> str:
+def hash_and_scale_image(
+        mode: str, image_name: str = None, image_file=None
+    ) -> str:
     """Hash image with sha256."""
+    if mode == "name":
+        with open(f"images/{image_name}", "rb") as image:
+            image_content = image.read()
+    elif mode == "file":
+        image_name = image_file.name
+        image_content = image_file.read()
+
     suffix = image_name.split(".")[-1]
-    with open(f"images/{image_name}", "rb") as image:
-        image_content = image.read()
     hashed_name = sha256(image_content).hexdigest() + "." + suffix
-    image = Image.open(f"images/{image_name}")
+    image = Image.open(image_file)
     image.thumbnail((1024, 1024))
     image.save(f"images/{hashed_name}")
+
     return hashed_name
 
 
