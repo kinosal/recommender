@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "recommender"
+version = "0.1.0"
+description = ""
+authors = ["Nikolas Schriefer <info@nikolasschriefer.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+boto3 = "^1.29.0"
+openai = "^1.2.4"
+pillow = "^10.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pycodestyle = "^2.11.1"
+pydocstyle = "^6.3.0"
+black = "^23.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
