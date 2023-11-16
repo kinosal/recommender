@@ -1,16 +1,21 @@
 """Streamlit app to recommend anything based on personal photos."""
 
+import logging
+
 import streamlit as st
 
 import rekognition as rek
 import gpt
+
+# Configure logger
+logging.basicConfig(format="\n%(asctime)s\n%(message)s", level=logging.INFO, force=True)
 
 
 # Define functions
 def detect_objects(image_files, model):
     """Detect objects in images."""
     labels = set()
-    for image_file in image_files[:5]:
+    for image_file in image_files:
         hashed_image, hashed_image_name = rek.hash_and_scale_image(
             mode="file", image_file=image_file
         )
@@ -25,6 +30,7 @@ def detect_objects(image_files, model):
         elif model == "GPT-4 Vision (Slower)":
             objects = gpt.detect_labels(image_url)
         labels.update(objects)
+    logging.info("\n" + ", ".join(labels))
     return labels
 
 
@@ -40,8 +46,8 @@ def generate_recommendations(topic, image_files, model):
         st.session_state.error = "Please upload at least one image"
         return
 
-    if len(image_files) > 5:
-        st.session_state.error = "Please upload a maximum of five images"
+    if len(image_files) > 10:
+        st.session_state.error = "Please upload a maximum of 10 images"
         return
 
     if image_files and topic and (
@@ -60,6 +66,8 @@ def generate_recommendations(topic, image_files, model):
                 st.session_state.recommendations = gpt.recommend(
                     st.session_state.labels, topic
                 )
+                logging.info(f"\nTopic: {topic}")
+                logging.info("\n" + st.session_state.recommendations)
 
 
 # Configure Streamlit page and state
@@ -92,7 +100,7 @@ model = st.selectbox(
 )
 
 image_files = st.file_uploader(
-    label="Upload up to 5 personal photos",
+    label="Upload up to 10 personal photos",
     type=["png", "jpg", "jpeg"],
     accept_multiple_files=True,
 )

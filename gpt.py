@@ -8,7 +8,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def detect_labels(image_url: str) -> list:
-    """Detect labels in image."""
+    """Detect labels in an image."""
     response = openai.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -33,18 +33,18 @@ def detect_labels(image_url: str) -> list:
 
 
 def recommend(labels: list, topic: str) -> str:
-    """Recommend a product based on labels."""
+    """Create recommendations based on a topic and preference labels."""
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
-                "content": "You recommend the user anything they could do, based on the topic they are interested in and the provided labels which have been extracted from their personal photos using computer vision. Your up to five recommendations are concise, specific and tailored to the personal user preferences you can infer from the available information, without referring directly to the given labels.",
+                "content": "You recommend the user anything they could do, based on the topic they are interested in and the provided list of labels recognized in their personal photos. Your up to five recommendations are concise, specific and tailored to the personal user preferences you can infer from the available information. You answer in numbered list form, with each recommendation on a new line, without any additional content.",
             },
             {
                 "role": "user",
                 "content": (
-                    f"Here is the list of labels from my personal photos: {labels}."
+                    f"Here is the list of labels from my personal photos: {labels}.\n"
                     f"Given this information, which {topic} would you recommend to me?"
                 ),
             },
