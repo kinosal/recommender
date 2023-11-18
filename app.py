@@ -102,7 +102,7 @@ if "error" not in st.session_state:
     st.session_state.error = ""
 
 # Render Streamlit page
-st.title("Recommmend me anything")
+st.title("Recommend me anything")
 st.markdown(
     "This mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect objects in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) or Meta's Llama 2 on Amazon [Bedrock](https://aws.amazon.com/bedrock/llama-2/) to generate respective recommendations.\n\nYou can find the code on [GitHub](https://github.com/kinosal/recommender) and the author on [Twitter](https://twitter.com/kinosal)."
 )
