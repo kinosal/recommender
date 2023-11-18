@@ -32,10 +32,10 @@ def detect_labels(image_url: str) -> list:
     return response.choices[0].message.content.split(", ")
 
 
-def recommend(labels: list, topic: str) -> str:
+def recommend(labels: list, topic: str, model: str) -> str:
     """Create recommendations based on a topic and preference labels."""
     response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=model,
         messages=[
             {
                 "role": "system",

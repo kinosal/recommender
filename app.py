@@ -34,7 +34,7 @@ def detect_objects(image_files, model):
     return labels
 
 
-def generate_recommendations(topic, image_files, model):
+def generate_recommendations(topic, image_files, vision_model):
     """Generate recommendations."""
     st.session_state.error = ""
 
@@ -50,21 +50,25 @@ def generate_recommendations(topic, image_files, model):
         st.session_state.error = "Please upload a maximum of 10 images"
         return
 
-    if image_files and topic and (
-        st.session_state.image_files != image_files
-        or st.session_state.model != model
+    if (
+        image_files
+        and topic
+        and (
+            st.session_state.image_files != image_files
+            or st.session_state.vision_model != vision_model
+        )
     ):
         st.session_state.image_files = image_files
-        st.session_state.model = model
+        st.session_state.vision_model = vision_model
         with spinner_placeholder:
             with st.spinner("Analyzing your photos..."):
-                st.session_state.labels = detect_objects(image_files, model)
+                st.session_state.labels = detect_objects(image_files, vision_model)
 
     if st.session_state.labels and topic:
         with spinner_placeholder:
             with st.spinner("Generating your personal recommendations..."):
                 st.session_state.recommendations = gpt.recommend(
-                    st.session_state.labels, topic
+                    st.session_state.labels, topic, text_model
                 )
                 logging.info(f"\nTopic: {topic}")
                 logging.info("\n" + st.session_state.recommendations)
@@ -76,8 +80,10 @@ if "topic" not in st.session_state:
     st.session_state.topic = ""
 if "image_files" not in st.session_state:
     st.session_state.image_files = []
-if "model" not in st.session_state:
-    st.session_state.model = ""
+if "vision_model" not in st.session_state:
+    st.session_state.vision_model = ""
+if "text_model" not in st.session_state:
+    st.session_state.text_model = ""
 if "labels" not in st.session_state:
     st.session_state.labels = []
 if "recommendations" not in st.session_state:
@@ -88,16 +94,25 @@ if "error" not in st.session_state:
 # Render Streamlit page
 st.title("Recommmend me anything")
 st.markdown(
-    "This mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT-4 Vision](https://platform.openai.com/docs/models) to detect people, objects, places, and sentiment in the uploaded images, and OpenAI's [GPT-4 Text](https://platform.openai.com/docs/models) to generate respective recommendations. You can find the code on [GitHub](https://github.com/kinosal/recommender) and the author on [Twitter](https://twitter.com/kinosal)."
+    "This mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect people, objects, places, and sentiment in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) to generate respective recommendations. You can find the code on [GitHub](https://github.com/kinosal/recommender) and the author on [Twitter](https://twitter.com/kinosal)."
 )
 
 topic = st.text_input(
     label="Topic", placeholder="Books, movies, travel destinations, ..."
 )
 
-model = st.selectbox(
-    label="Vision Model", options=["Amazon Rekognition (Faster)", "GPT-4 Vision (Slower)"]
+vision_model = st.selectbox(
+    label="Vision Model",
+    options=["Amazon Rekognition (Faster)", "GPT-4 Vision (Slower)"],
 )
+
+text_model_select = st.selectbox(
+    label="Text Model", options=["GPT 3.5 (Faster)", "GPT 4 (Preview)"]
+)
+if text_model_select == "GPT 3.5 (Faster)":
+    text_model = "gpt-3.5-turbo"
+elif text_model_select == "GPT 4 (Preview)":
+    text_model = "gpt-4-1106-preview"
 
 image_files = st.file_uploader(
     label="Upload up to 10 personal photos",
@@ -109,7 +124,7 @@ st.button(
     label="Generate recommendations",
     type="primary",
     on_click=generate_recommendations,
-    args=(topic, image_files, model),
+    args=(topic, image_files, vision_model),
 )
 
 spinner_placeholder = st.empty()
