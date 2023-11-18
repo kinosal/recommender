@@ -107,11 +107,11 @@ vision_model = st.selectbox(
 )
 
 text_model_select = st.selectbox(
-    label="Text Model", options=["GPT 3.5 (Faster)", "GPT 4 (Preview)"]
+    label="Text Model", options=["GPT-3.5 (Faster)", "GPT-4 (Preview)"]
 )
-if text_model_select == "GPT 3.5 (Faster)":
+if text_model_select == "GPT-3.5 (Faster)":
     text_model = "gpt-3.5-turbo"
-elif text_model_select == "GPT 4 (Preview)":
+elif text_model_select == "GPT-4 (Preview)":
     text_model = "gpt-4-1106-preview"
 
 image_files = st.file_uploader(
@@ -136,4 +136,9 @@ if st.session_state.recommendations:
     st.markdown("""---""")
     st.text_area(
         label="Your recommendations", value=st.session_state.recommendations, height=300
+    )
+
+if st.session_state.recommendations:
+    st.text_area(
+        label="Your image labels", value=", ".join(st.session_state.labels), height=200
     )
