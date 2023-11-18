@@ -4,7 +4,7 @@ Live version of this app at https://recommendation.streamlit.app
 
 ## Description
 
-This [Streamlit](https://streamlit.io) mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect people, objects, places, and sentiment in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) to generate respective recommendations.
+This [Streamlit](https://streamlit.io) mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect objects in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) or Meta's Llama 2 on Amazon [Bedrock](https://aws.amazon.com/bedrock/llama-2/) to generate respective recommendations.
 
 The Rekognition API does not require a prompt and is configured to return up to 50 labels with at least 90% confidence for each image. For image recognition with OpenAI's GPTs, the app generates a prompt to return labels as a comma-separated list. The app then uses another OpenAI GPT model to generate personal recommendations for the specified topic based on the image labels.
 

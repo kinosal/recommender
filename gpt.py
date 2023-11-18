@@ -44,12 +44,12 @@ def recommend(labels: list, topic: str, model: str) -> str:
             {
                 "role": "user",
                 "content": (
-                    f"Here is the list of labels from my personal photos: {labels}.\n"
-                    f"Given this information, which {topic} would you recommend to me?"
+                    f"Here is the list of labels from my personal photos: {', '.join(labels)}. Given this information, which {topic} would you recommend to me?"
                 ),
             },
         ],
         temperature=0.7,
+        top_p=1,
         max_tokens=256,
     )
     return response.choices[0].message.content

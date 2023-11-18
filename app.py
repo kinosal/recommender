@@ -6,6 +6,7 @@ import streamlit as st
 
 import rekognition as rek
 import gpt
+import bedrock as bed
 
 # Configure logger
 logging.basicConfig(format="\n%(asctime)s\n%(message)s", level=logging.INFO, force=True)
@@ -34,7 +35,7 @@ def detect_objects(image_files, model):
     return labels
 
 
-def generate_recommendations(topic, image_files, vision_model):
+def generate_recommendations(topic, image_files, vision_model, text_model):
     """Generate recommendations."""
     st.session_state.error = ""
 
@@ -67,9 +68,18 @@ def generate_recommendations(topic, image_files, vision_model):
     if st.session_state.labels and topic:
         with spinner_placeholder:
             with st.spinner("Generating your personal recommendations..."):
-                st.session_state.recommendations = gpt.recommend(
-                    st.session_state.labels, topic, text_model
-                )
+                if text_model == "GPT-3.5":
+                    st.session_state.recommendations = gpt.recommend(
+                        st.session_state.labels, topic, "gpt-3.5-turbo"
+                    )
+                elif text_model == "GPT-4":
+                    st.session_state.recommendations = gpt.recommend(
+                        st.session_state.labels, topic, "gpt-4-1106-preview"
+                    )
+                elif text_model == "Llama-2":
+                    st.session_state.recommendations = bed.recommend(
+                        st.session_state.labels, topic, "meta.llama2-13b-chat-v1"
+                    )
                 logging.info(f"\nTopic: {topic}")
                 logging.info("\n" + st.session_state.recommendations)
 
@@ -94,7 +104,7 @@ if "error" not in st.session_state:
 # Render Streamlit page
 st.title("Recommmend me anything")
 st.markdown(
-    "This mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect people, objects, places, and sentiment in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) to generate respective recommendations. You can find the code on [GitHub](https://github.com/kinosal/recommender) and the author on [Twitter](https://twitter.com/kinosal)."
+    "This mini-app recommends any activity by analyzing a few personal photos. It uses Amazon [Rekognition](https://aws.amazon.com/rekognition/image-features/) or OpenAI's [GPT Vision](https://platform.openai.com/docs/models) to detect objects in the uploaded images, and OpenAI's [GPT Text](https://platform.openai.com/docs/models) or Meta's Llama 2 on Amazon [Bedrock](https://aws.amazon.com/bedrock/llama-2/) to generate respective recommendations.\n\nYou can find the code on [GitHub](https://github.com/kinosal/recommender) and the author on [Twitter](https://twitter.com/kinosal)."
 )
 
 topic = st.text_input(
@@ -106,13 +116,9 @@ vision_model = st.selectbox(
     options=["Amazon Rekognition (Faster)", "GPT-4 Vision (Slower)"],
 )
 
-text_model_select = st.selectbox(
-    label="Text Model", options=["GPT-3.5 (Faster)", "GPT-4 (Preview)"]
+text_model = st.selectbox(
+    label="Text Model", options=["GPT-3.5", "GPT-4", "Llama-2"]
 )
-if text_model_select == "GPT-3.5 (Faster)":
-    text_model = "gpt-3.5-turbo"
-elif text_model_select == "GPT-4 (Preview)":
-    text_model = "gpt-4-1106-preview"
 
 image_files = st.file_uploader(
     label="Upload up to 10 personal photos",
@@ -124,7 +130,7 @@ st.button(
     label="Generate recommendations",
     type="primary",
     on_click=generate_recommendations,
-    args=(topic, image_files, vision_model),
+    args=(topic, image_files, vision_model, text_model),
 )
 
 spinner_placeholder = st.empty()

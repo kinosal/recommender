@@ -2,11 +2,13 @@
 
 import rekognition as rek
 import gpt
+import bedrock as bed
 
 if __name__ == "__main__":
     image_file_names = ["nik1.jpeg", "nik2.jpeg"]
     topic = "books"
-    model = "Amazon Rekognition"
+    vision_model = "Amazon Rekognition"
+    text_model = "meta.llama2-13b-chat-v1"
 
     labels = set()
     for image_file_name in image_file_names:
@@ -17,12 +19,15 @@ if __name__ == "__main__":
             image_url = rek.upload_image(mode="path", image_name=hashed_image_name)
         else:
             image_url = f"https://{rek.BUCKET}.s3.amazonaws.com/{hashed_image_name}"
-        if model == "Amazon Rekognition":
+        if vision_model == "Amazon Rekognition":
             objects = rek.detect_labels(hashed_image_name)
-        elif model == "GPT-4 Vision":
+        elif vision_model == "GPT-4 Vision":
             objects = gpt.detect_labels(image_url)
         labels.update(objects)
         print(objects)
 
-    recommendations = gpt.recommend(labels, topic)
+    if (text_model == "gpt-3.5-turbo" or text_model == "gpt-4-1106-preview"):
+        recommendations = gpt.recommend(labels, topic, text_model)
+    elif text_model == "meta.llama2-13b-chat-v1":
+        recommendations = bed.recommend(labels, topic, text_model)
     print(recommendations)
